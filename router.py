@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from models.document_models import DocumentRequest, DocumentResponse, DocumentListResponse
 from models.excel_model import ExcelRequest, ExcelResponse
-from services.docx_creator import DocxCreator
+from models.presentation_model import PresentationResponse, PresentationRequest
+from services.docx.docx_creator import DocxCreator
 from services.minio_handler import MinioHandler
-from services.excel_creator import ExcelCreator
+from services.excel.excel_creator import ExcelCreator
+from services.powerpoint.ppt_creator import PresentationCreator
 from datetime import datetime
 from typing import Optional
 import socket, os
@@ -20,6 +22,9 @@ def get_minio_handler():
 
 def get_excel_creator():
     return ExcelCreator()
+
+def get_presentation_creator():
+    return PresentationCreator()
 
 def get_server_ip():
     """Get server IP address"""
@@ -149,8 +154,8 @@ async def generate_excel(
         # Full file path
         filepath = os.path.join(folder_path, filename)
         
-        # Create Excel file
-        excel_stream = excel_creator.create_workbook(request.data, filename)
+        # Create Excel file from content
+        excel_stream = excel_creator.create_excel_from_content(request.content, filename)
         
         # Save to local file system
         with open(filepath, 'wb') as f:
@@ -173,6 +178,52 @@ async def generate_excel(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/generate-presentation", response_model=PresentationResponse)
+async def generate_presentation(
+    request: PresentationRequest,
+    presentation_creator: PresentationCreator = Depends(get_presentation_creator)
+):
+    try:
+        # Create date-based folder structure
+        today = datetime.now()
+        folder_path = os.path.join(
+            "generated_presentations",
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        # Generate filename
+        filename = presentation_creator.generate_filename(request.filename)
+        
+        # Full file path
+        filepath = os.path.join(folder_path, filename)
+        
+        # Create presentation
+        presentation_stream = presentation_creator.create_presentation(request.content, filename)
+        
+        # Save to local file system
+        with open(filepath, 'wb') as f:
+            f.write(presentation_stream.read())
+        
+        # Generate download URL
+        server_ip = get_server_ip()
+        relative_path = filepath.replace("generated_presentations" + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return PresentationResponse(
+            status="success",
+            message="Presentation generated successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.get("/")
 async def root():
     """API information"""
