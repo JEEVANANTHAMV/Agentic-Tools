@@ -11,6 +11,8 @@ from datetime import datetime
 from typing import Optional
 import socket, os
 from config import settings
+from models.sql_to_excel import SQLQueryRequest, SQLQueryResponse
+from services.SQL.sql_to_excel import SQLToExcelService
 
 router = APIRouter()
 
@@ -25,6 +27,9 @@ def get_excel_creator():
 
 def get_presentation_creator():
     return PresentationCreator()
+
+def get_sql_service():
+    return SQLToExcelService()
 
 def get_server_ip():
     """Get server IP address"""
@@ -223,7 +228,53 @@ async def generate_presentation(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@router.post("/execute-sql-excel", response_model=SQLQueryResponse)
+async def execute_sql_query(
+    request: SQLQueryRequest,
+    sql_service: SQLToExcelService = Depends(get_sql_service)
+):
+    try:
+        # Create date-based folder structure
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        # Generate filename
+        filename = sql_service.generate_filename(request.filename)
+        
+        # Full file path
+        filepath = os.path.join(folder_path, filename)
+        
+        # Execute query and create Excel file
+        excel_stream = sql_service.execute_query_to_excel(request.query, filename)
+        
+        # Save to local file system
+        with open(filepath, 'wb') as f:
+            f.write(excel_stream.read())
+        
+        # Generate download URL
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return SQLQueryResponse(
+            status="success",
+            message="SQL query executed and Excel file generated successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/")
 async def root():
     """API information"""

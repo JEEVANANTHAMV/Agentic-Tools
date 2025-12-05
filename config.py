@@ -23,5 +23,10 @@ class Settings:
     DEFAULT_FONT_SIZE = int(os.getenv("DEFAULT_FONT_SIZE", 11))
 
     DOCUMENT_LOCATION = os.getenv("DOCUMENT_LOCATION","generated_documents")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "3306")
+    DB_USER = os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_NAME = os.getenv("DB_NAME", "your_database")
 
 settings = Settings()
