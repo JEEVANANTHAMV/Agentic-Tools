@@ -2,397 +2,101 @@
 
 ## Tool Name - presentation_creator
 
-## Basic Structure
-
-The presentation creator allows you to create PowerPoint presentations with multiple slides, layouts, and content. The content is formatted using a combination of Markdown-like syntax and special tags for slide formatting.
-
-## Slide Creation
-
-### New Slide
-
-To create a new slide, use the slide delimiter:
-
-```
----
-```
-
-Each section between delimiters represents a new slide.
-
-### Slide Layouts
-
-Specify the layout at the beginning of a slide:
-
-```
-[LAYOUT:title]
-[LAYOUT:content]
-[LAYOUT:two_column]
-[LAYOUT:comparison]
-[LAYOUT:section_header]
-[LAYOUT:blank]
-```
-
-## Content Elements
-
-### Title
-
-```
-# Slide Title
-```
-
-### Subtitle
-
-```
-## Subtitle
-```
-
-### Text Content
-
-Regular text content:
-
-```
-This is regular text content on the slide.
-```
-
-### Bullet Points
-
-```
-- First bullet point
-- Second bullet point
-- Third bullet point
-```
-
-Or:
-
-```
-* First item
-* Second item
-* Third item
-```
-
-### Numbered Lists
-
-```
-1. First item
-2. Second item
-3. Third item
-```
-
-### Text Formatting
-
-#### Bold
-
-```
-[BOLD]This text is bold[/BOLD]
-```
-
-#### Italic
-
-```
-[ITALIC]This text is italic[/ITALIC]
-```
-
-#### Color
-
-```
-[COLOR:RRGGBB]This text has a custom color[/COLOR]
-```
-
-Examples:
-- Red: `[COLOR:FF0000]Red text[/COLOR]`
-- Blue: `[COLOR:0000FF]Blue text[/COLOR]`
-- Green: `[COLOR:00FF00]Green text[/COLOR]`
-
-#### Font Size
-
-```
-[SIZE:24]Large text[/SIZE]
-[SIZE:18]Medium text[/SIZE]
-[SIZE:12]Small text[/SIZE]
-```
-
-## Tables
-
-```
-|Header 1|Header 2|Header 3|
-|--------|--------|--------|
-|Cell 1  |Cell 2  |Cell 3  |
-|Cell 4  |Cell 5  |Cell 6  |
-```
-
-## Images
-
-```
-[IMAGE:image_path]
-```
-
-Or with sizing:
-
-```
-[IMAGE:image_path,width,height]
-```
-
-Example:
-```
-[IMAGE:logo.png,200,100]
-```
-
-## Shapes
-
-### Rectangle
-
-```
-[SHAPE:rectangle,width,height,color]
-```
-
-Example:
-```
-[SHAPE:rectangle,300,150,FF6384]
-```
-
-### Circle
-
-```
-[SHAPE:circle,diameter,color]
-```
-
-Example:
-```
-[SHAPE:circle,100,36A2EB]
-```
-
-## Two Column Layout
-
-```
-[LAYOUT:two_column]
-
-# Title
-
-[LEFT]
-Left column content
-- Point 1
-- Point 2
-[/LEFT]
-
-[RIGHT]
-Right column content
-- Point 1
-- Point 2
-[/RIGHT]
-```
-
-## Section Headers
-
-```
-[LAYOUT:section_header]
-
-# Section Title
-
-## Section Subtitle
-```
-
-## Slide Background
-
-```
-[BACKGROUND:color]
-[BACKGROUND:image_path]
-[BACKGROUND:gradient]
-```
-
-Examples:
-```
-[BACKGROUND:FFFFFF]  # White background
-[BACKGROUND:000000]  # Black background
-[BACKGROUND:logo_bg.png]  # Image background
-```
-
-## Animations
-
-```
-[ANIMATION:fade]
-[ANIMATION:slide_in]
-[ANIMATION:zoom]
-[ANIMATION:bounce]
-```
-
-Apply to elements:
-```
-[ANIMATION:fade]- This bullet will fade in[/ANIMATION]
-```
-
-## Transitions
-
-```
-[TRANSITION:fade]
-[TRANSITION:slide]
-[TRANSITION:dissolve]
-[TRANSITION:push]
-```
-
-## Combining Elements
-
-You can combine multiple elements on a slide:
-
-```
-[LAYOUT:content]
-
-# Quarterly Results
-
-## Q4 2024 Performance
-
-[BOLD]Key Highlights:[/BOLD]
-
-- [COLOR:00FF00]Revenue increased by 25%[/COLOR]
-- [COLOR:0000FF]New customers: 1,500[/COLOR]
-- [COLOR:FF0000]Expenses reduced by 10%[/COLOR]
-
-|Metric|Q3|Q4|Change|
-|------|------|------|------|
-|Revenue|$800K|$1M|+25%|
-|Customers|5000|6500|+30%|
-|Profit|$200K|$300K|+50%|
-
-[IMAGE:chart.png,400,250]
-```
-
-## Best Practices
-
-1. Keep slides concise and focused
-2. Use consistent formatting throughout
-3. Limit text per slide (6x6 rule: 6 bullets, 6 words each)
-4. Use high-quality images
-5. Choose readable font sizes (minimum 18pt for body text)
-6. Use contrasting colors for readability
-7. Include clear titles on all slides
-8. Use animations sparingly
-
-## Example Presentation
-
-```
-[LAYOUT:title]
-[BACKGROUND:gradient]
-
-# Annual Report 2024
-
-## Presented by Sales Team
-
-[IMAGE:logo.png,150,150]
-
-[TRANSITION:fade]
-
----
-
-[LAYOUT:section_header]
-
-# Executive Summary
-
-## Key Highlights from 2024
-
-[TRANSITION:slide]
-
----
-
-[LAYOUT:content]
-
-# Performance Overview
-
-[BOLD]Year-over-Year Growth:[/BOLD]
-
-- [COLOR:00FF00]Revenue: +25%[/COLOR]
-- [COLOR:00FF00]Customers: +30%[/COLOR]
-- [COLOR:00FF00]Market Share: +15%[/COLOR]
-
-[SIZE:14]Our strategic initiatives have delivered exceptional results across all key metrics.[/SIZE]
-
-[TRANSITION:dissolve]
-
----
-
-[LAYOUT:two_column]
-
-# Regional Performance
-
-[LEFT]
-## North America
-
-- Revenue: $5M
-- Growth: +20%
-- Customers: 3000
-[/LEFT]
-
-[RIGHT]
-## International
-
-- Revenue: $3M
-- Growth: +35%
-- Customers: 2000
-[/RIGHT]
-
-[TRANSITION:slide]
-
----
-
-[LAYOUT:content]
-
-# Financial Summary
-
-|Quarter|Revenue|Expenses|Profit|
-|-------|--------|--------|------|
-|Q1|$2.0M|$1.5M|$0.5M|
-|Q2|$2.5M|$1.6M|$0.9M|
-|Q3|$2.8M|$1.7M|$1.1M|
-|Q4|$3.2M|$1.8M|$1.4M|
-
-[IMAGE:revenue_chart.png,500,300]
-
-[TRANSITION:fade]
-
----
-
-[LAYOUT:title]
-
-# Thank You
-
-## Questions & Answers
-
-[IMAGE:contact_info.png,300,100]
+## Core Objective
+Create **premium, visually stunning, and modern** PowerPoint presentations that "WOW" the audience. Use high-contrast color palettes, absolute positioning for balanced layouts, and rich typography.
+
+## Premium Design Strategy
+
+1.  **Rich Aesthetics**: Avoid basic white backgrounds. Use a curated color palette:
+    *   **Primary Blue**: `#4287f5`
+    *   **Secondary Indigo**: `#667eea`
+    *   **Accent Cyan**: `#00b6d6`
+    *   **Alert/Metric Red**: `#ff4d4d`
+    *   **Dark Mode BG**: `#121416`
+2.  **Layout Precision**: 
+    *   Use `position: absolute;` with percentages (e.g., `left: 5%; top: 10%; width: 90%;`) for every element. 
+    *   This removes the "boring bullet list" look and creates custom, professional layouts.
+3.  **Visual Hierarchy**:
+    *   Larger font sizes for key metrics (e.g., `font-size: 32px;` or `48px;`).
+    *   Use `<strong>` tags with vibrant colors to make keywords pop inside paragraphs.
+4.  **Icons and SVGs**:
+    *   **Emojis**: Use standard emojis for quick icons (🚀, 📈, ⚖️).
+    *   **Images**: Use the `<img>` tag for high-quality photos or brand logos.
+    *   **SVG-style Shapes**: Create "Cards" or "Containers" using `<div>` with `background-color`, `border-radius: 15px;`, and `border-color`.
+5.  **Data Visualization**:
+    *   Use `<table>` for structured data.
+    *   Use colored boxes with large text inside for "KPI dashboards."
+
+## Supported HTML Elements & Styles
+
+| Element | Supported Styles / Attributes |
+| :--- | :--- |
+| **Slide** | `<div class="slide" style="background-color: #HEX;">` |
+| **Containers (Divs)** | `position: absolute`, `left`, `top`, `width`, `height`, `background-color`, `border-radius`, `border-color`, `border-width` |
+| **Headings (H1-H6)** | `color`, `font-size`, `text-align`, `left`, `top`, `width` |
+| **Paragraphs (P)** | `color`, `font-size`, `text-align`, `left`, `top`, `width` |
+| **Lists (UL, OL)** | `color`, `left`, `top`, `width` (Supports nested `<li>`) |
+| **Inline Formatting** | `<strong>` (Bold), `<em>` (Italic) — both support inline `color` and `font-size` styles. |
+| **Images (IMG)** | `src` (URL or path), `width`, `height`, `left`, `top` |
+| **Tables (TABLE)** | `left`, `top`, `width`, `background-color` (Header `<th>` is auto-styled blue). |
+
+## Design Principles
+*   **The 6x6 Rule**: Max 6 lines of text, 6 words per line. Let the design speak.
+*   **Contrast**: Always ensure high contrast between text and background.
+*   **Alignment**: Align elements to a grid (e.g., left margins always at 5% or 10%).
+
+## Premium Example: High-Tech Pitch Deck
+
+```html
+<!-- Slide 1: Impactful Title -->
+<div class="slide" style="background-color: #121416;">
+  <h1 style="color: #ffffff; font-size: 54px; text-align: center; top: 25%;">QUANTUM NETWORKS 🚀</h1>
+  <p style="color: #00b6d6; font-size: 24px; text-align: center; top: 40%;">The Future of Unhackable Communication</p>
+  <div style="position: absolute; top: 70%; width: 100%; text-align: center;">
+    <p style="color: #667eea; font-size: 14px;">CONFIDENTIAL | SERIES A PITCH 2025</p>
+  </div>
+</div>
+
+<!-- Slide 2: The Problem (Dashboard Style) -->
+<div class="slide" style="background-color: #ffffff;">
+  <h1 style="color: #4287f5; left: 5%; top: 5%;">Cybersecurity Crisis 📈</h1>
+  
+  <div style="position: absolute; left: 5%; top: 20%; width: 45%;">
+    <p style="color: #333; font-size: 20px;">Traditional encryption is <strong style="color: #ff4d4d;">failing</strong>.</p>
+    <ul>
+      <li>Quantum computers can crack RSA in seconds</li>
+      <li>Global cyber-theft costs <strong style="color: #ff4d4d;">$10.5T</strong> annually</li>
+      <li>Trust in digital infrastructure is at an all-time low</li>
+    </ul>
+  </div>
+
+  <!-- Stat Card -->
+  <div style="position: absolute; left: 55%; top: 20%; width: 40%; height: 50%; background-color: #f0f4ff; border-radius: 20px; border-color: #4287f5;">
+    <h3 style="color: #000; text-align: center; top: 10%;">The Impact</h3>
+    <div style="text-align: center; top: 30%;">
+      <p style="font-size: 42px;"><strong style="color: #ff4d4d;">60%</strong></p>
+      <p>of breaches are due to <br/>ancient cryptography</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: Conclusion & Next Steps -->
+<div class=\"slide\" style=\"background-color: #4287f5;\">
+  <h1 style=\"color: #ffffff; text-align: center; top: 30%;\">Ready to Scale?</h1>
+  <div style=\"position: absolute; left: 20%; top: 50%; width: 60%; text-align: center; background-color: rgba(255,255,255,0.1); border-radius: 50px;\">
+    <p style=\"color: #ffffff; padding: 20px;\">Contact us at investors@quantum.net</p>
+  </div>
+</div>
 ```
 
 ## API Call Format
-
-To generate a presentation, make a POST request to the endpoint with the following JSON structure:
-
-```json
-{
-  "content": "Your formatted presentation content string",
-  "filename": "presentation.pptx"
-}
-```
-
-### Example cURL Request
+`POST /api/v1/generate-presentation`
 
 ```bash
-curl -X 'POST' \
-  'http://101.53.140.44:8002/api/v1/generate-presentation' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "content": "[LAYOUT:title]\n\n# Welcome\n\n## Presentation Title\n\n---\n\n[LAYOUT:content]\n\n# Agenda\n\n- Topic 1\n- Topic 2\n- Topic 3",
-  "filename": "presentation.pptx"
+curl -X POST 'http://101.53.140.44:8002/api/v1/generate-presentation' \
+-H 'Content-Type: application/json' \
+-d '{
+  "content": "SLIDE_HTML_HERE",
+  "filename": "quantum_pitch.pptx"
 }'
 ```
-
-## Tool Call Integration
-
-When integrating this tool into your application, use the following format:
-
-```javascript
-{
-  "tool_name": "presentation_creator",
-  "parameters": {
-    "content": "[Your formatted presentation content string]",
-    "filename": "output_filename.pptx"
-  }
-}
-```
-
-By following these guidelines, you can create well-formatted PowerPoint presentations using the presentation_creator tool.

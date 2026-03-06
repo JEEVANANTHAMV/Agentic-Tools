@@ -118,18 +118,43 @@ async def generate_document(
 async def download_file(path: str):
     """Download generated document using path structure YYYY/MM/DD/filename"""
     try:
-        # Reconstruct the full file path
-        filepath = os.path.join(settings.DOCUMENT_LOCATION, path)
+        # Try multiple locations for the file
+        possible_locations = [
+            settings.DOCUMENT_LOCATION,  # generated_documents
+            "generated_presentations",   # generated_presentations
+            "generated_html_presentations"  # generated_html_presentations
+        ]
         
-        if not os.path.exists(filepath):
+        filepath = None
+        for location in possible_locations:
+            test_path = os.path.join(location, path)
+            if os.path.exists(test_path):
+                filepath = test_path
+                break
+        
+        if filepath is None:
             raise HTTPException(status_code=421, detail="File not found")
         
         # Extract filename from path
         filename = path.split('/')[-1]
         
+        # Determine media type based on file extension
+        if filename.endswith('.pptx'):
+            media_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        elif filename.endswith('.docx'):
+            media_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elif filename.endswith('.xlsx'):
+            media_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        elif filename.endswith('.pdf'):
+            media_type = 'application/pdf'
+        elif filename.endswith('.html'):
+            media_type = 'text/html'
+        else:
+            media_type = 'application/octet-stream'
+        
         return FileResponse(
             filepath,
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            media_type=media_type,
             filename=filename
         )
     except Exception as e:
