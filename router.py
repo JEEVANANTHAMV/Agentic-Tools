@@ -13,6 +13,18 @@ import socket, os
 from config import settings
 from models.sql_to_excel import SQLQueryRequest, SQLQueryResponse
 from services.SQL.sql_to_excel import SQLToExcelService
+from models.pdf_model import PDFRequest, PDFResponse
+from models.csv_model import CSVRequest, CSVResponse
+from models.json_model import JSONRequest, JSONResponse
+from models.xml_model import XMLRequest, XMLResponse
+from models.markdown_model import MarkdownRequest, MarkdownResponse
+from models.visualization_model import VisualizationRequest, VisualizationResponse
+from services.pdf.pdf_creator import PDFCreator
+from services.csv.csv_processor import CSVProcessor
+from services.json.json_formatter import JSONFormatter
+from services.xml.xml_parser import XMLParser
+from services.markdown.markdown_converter import MarkdownConverter
+from services.visualization.visualization_creator import VisualizationCreator
 
 router = APIRouter()
 
@@ -30,6 +42,24 @@ def get_presentation_creator():
 
 def get_sql_service():
     return SQLToExcelService()
+
+def get_pdf_creator():
+    return PDFCreator()
+
+def get_csv_processor():
+    return CSVProcessor()
+
+def get_json_formatter():
+    return JSONFormatter()
+
+def get_xml_parser():
+    return XMLParser()
+
+def get_markdown_converter():
+    return MarkdownConverter()
+
+def get_visualization_creator():
+    return VisualizationCreator()
 
 def get_server_ip():
     """Get server IP address"""
@@ -289,3 +319,243 @@ async def root():
         },
         "server_ip": get_server_ip()
     }
+
+# PDF Converter Endpoints
+@router.post("/convert-to-pdf", response_model=PDFResponse, tags=["PDF"])
+async def convert_to_pdf(
+    request: PDFRequest,
+    pdf_creator: PDFCreator = Depends(get_pdf_creator)
+):
+    """Convert content to PDF format"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = pdf_creator.generate_filename(request.filename)
+        filepath = os.path.join(folder_path, filename)
+        
+        pdf_stream = pdf_creator.create_pdf_from_content(request.content, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(pdf_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return PDFResponse(
+            status="success",
+            message="PDF generated successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# CSV Processor Endpoints
+@router.post("/process-csv", response_model=CSVResponse, tags=["CSV"])
+async def process_csv(
+    request: CSVRequest,
+    csv_processor: CSVProcessor = Depends(get_csv_processor)
+):
+    """Process and transform CSV data"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = csv_processor.generate_filename(request.filename)
+        filepath = os.path.join(folder_path, filename)
+        
+        csv_stream = csv_processor.process_csv(request.content, request.operations, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(csv_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return CSVResponse(
+            status="success",
+            message="CSV processed successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# JSON Formatter Endpoints
+@router.post("/format-json", response_model=JSONResponse, tags=["JSON"])
+async def format_json(
+    request: JSONRequest,
+    json_formatter: JSONFormatter = Depends(get_json_formatter)
+):
+    """Format and validate JSON data"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = json_formatter.generate_filename(request.filename)
+        filepath = os.path.join(folder_path, filename)
+        
+        json_stream = json_formatter.format_json(request.content, request.json_schema, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(json_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return JSONResponse(
+            status="success",
+            message="JSON formatted successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# XML Parser Endpoints
+@router.post("/parse-xml", response_model=XMLResponse, tags=["XML"])
+async def parse_xml(
+    request: XMLRequest,
+    xml_parser: XMLParser = Depends(get_xml_parser)
+):
+    """Parse and transform XML data"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = xml_parser.generate_filename(request.filename)
+        filepath = os.path.join(folder_path, filename)
+        
+        xml_stream = xml_parser.parse_xml(request.content, request.transform, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(xml_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return XMLResponse(
+            status="success",
+            message="XML parsed successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Markdown Converter Endpoints
+@router.post("/convert-markdown", response_model=MarkdownResponse, tags=["Markdown"])
+async def convert_markdown(
+    request: MarkdownRequest,
+    markdown_converter: MarkdownConverter = Depends(get_markdown_converter)
+):
+    """Convert Markdown to various formats"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = markdown_converter.generate_filename(request.filename, request.output_format)
+        filepath = os.path.join(folder_path, filename)
+        
+        output_stream = markdown_converter.convert_markdown(request.content, request.output_format, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(output_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return MarkdownResponse(
+            status="success",
+            message=f"Markdown converted to {request.output_format} successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Data Visualization Endpoints
+@router.post("/create-visualization", response_model=VisualizationResponse, tags=["Visualization"])
+async def create_visualization(
+    request: VisualizationRequest,
+    visualization_creator: VisualizationCreator = Depends(get_visualization_creator)
+):
+    """Create charts and visualizations from data"""
+    try:
+        today = datetime.now()
+        folder_path = os.path.join(
+            settings.DOCUMENT_LOCATION,
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(folder_path, exist_ok=True)
+        
+        filename = visualization_creator.generate_filename(request.filename)
+        filepath = os.path.join(folder_path, filename)
+        
+        viz_stream = visualization_creator.create_visualization(request.data, request.chart_type, filename)
+        
+        with open(filepath, 'wb') as f:
+            f.write(viz_stream.read())
+        
+        server_ip = get_server_ip()
+        relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
+        download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
+        
+        return VisualizationResponse(
+            status="success",
+            message=f"{request.chart_type} chart created successfully",
+            filename=filename,
+            object_name=relative_path,
+            download_url=download_url,
+            created_at=datetime.now()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

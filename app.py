@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from router import router as document_router
+from tools_router import router as tools_router
 from config import settings
 
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_TITLE,
     version=settings.APP_VERSION,
-    description="API for generating and managing Word documents with MinIO storage"
+    description="API for generating and managing documents, spreadsheets, presentations, and more with Forjinn Tools"
 )
 
 # Add CORS middleware
@@ -21,6 +22,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(document_router, prefix="/api/v1")
+app.include_router(tools_router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():
