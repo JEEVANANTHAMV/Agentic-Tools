@@ -63,14 +63,7 @@ def get_visualization_creator():
 
 def get_server_ip():
     """Get server IP address"""
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except:
-        return "localhost"
+    return "101.53.140.44"
 
 @router.post("/generate-document", response_model=DocumentResponse)
 async def generate_document(

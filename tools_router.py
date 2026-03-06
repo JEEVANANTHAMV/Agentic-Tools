@@ -243,7 +243,7 @@ def read_prompt_file(service_path: str) -> str:
 
 def generate_sample_curl(tool: Dict[str, Any]) -> str:
     """Generate a sample curl command for a given tool"""
-    base_url = "http://localhost:19801"
+    base_url = "http://101.53.140.44:8002"
     endpoint = tool["endpoint"]
     method = tool["method"]
     params = tool["parameters"]

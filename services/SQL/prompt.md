@@ -250,7 +250,7 @@ To execute a SQL query and generate Excel, make a POST request to the endpoint w
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:19801/api/v1/execute-sql-excel' \
+  'http://101.53.140.44:8002/api/v1/execute-sql-excel' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
