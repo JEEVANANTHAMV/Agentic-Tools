@@ -254,7 +254,7 @@ async def generate_presentation(
         filepath = os.path.join(folder_path, filename)
         
         # Create presentation
-        presentation_stream = presentation_creator.create_presentation(request.content, filename)
+        presentation_stream = await presentation_creator.create_presentation(request.content, filename)
         
         # Save to local file system
         with open(filepath, 'wb') as f:

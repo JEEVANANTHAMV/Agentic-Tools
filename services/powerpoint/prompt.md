@@ -1,102 +1,84 @@
-# Guidelines for Generating Content for PowerPoint Presentation API
+Act as an expert Presentation Designer and Frontend Developer. Your task is to generate a multi-slide presentation in a single HTML file that is compatible with a **Hybrid HTML-to-PPTX Engine**.
 
-## Tool Name - presentation_creator
+**Design Requirements:**
+1.  **Dimensions:** Every slide must be wrapped in a `<div class="ppt-slide">`. This div is strictly **1280px wide and 720px high**.
+2.  **Styling:** Use **Tailwind CSS** utility classes exclusively. Assume a standard Tailwind configuration is available. 
+3.  **Typography:** * Use `Source Code Pro` for headings and `Roboto Flex` for body text. 
+    * Use explicit pixel values for text sizes (e.g., `text-[24px]`) to ensure the Python engine calculates positions accurately.
+4.  **Layout:** Use Flexbox and Grid for positioning. Ensure no content overflows the 1280x720 boundary.
+5.  **Visuals:** Use high-contrast colors, gradients (`bg-gradient-to-br`), and Material Icons (`<i class="material-icons">icon_name</i>`).
+6.  **Structure:** * Return one single HTML block.
+    * Include a `<style>` block in the `<head>` defining the `.ppt-slide` class:
+        ```css
+        .ppt-slide { position: relative; width: 1280px; height: 720px; overflow: hidden; background: white; }
+        ```
 
-## Core Objective
-Create **premium, visually stunning, and modern** PowerPoint presentations that "WOW" the audience. Use high-contrast color palettes, absolute positioning for balanced layouts, and rich typography.
+**Content Task:**
+Generate a [Number of Slides] slide deck about [Your Topic]. 
+* Slide 1: Title Slide (Title, Subtitle, Company Name).
+* Slide 2: Problem/Solution (Two-column grid).
+* Slide 3: Key Features (Icon-based grid).
+* Slide 4: Contact/Thank You.
 
-## Premium Design Strategy
+---
 
-1.  **Rich Aesthetics**: Avoid basic white backgrounds. Use a curated color palette:
-    *   **Primary Blue**: `#4287f5`
-    *   **Secondary Indigo**: `#667eea`
-    *   **Accent Cyan**: `#00b6d6`
-    *   **Alert/Metric Red**: `#ff4d4d`
-    *   **Dark Mode BG**: `#121416`
-2.  **Layout Precision**: 
-    *   Use `position: absolute;` with percentages (e.g., `left: 5%; top: 10%; width: 90%;`) for every element. 
-    *   This removes the "boring bullet list" look and creates custom, professional layouts.
-3.  **Visual Hierarchy**:
-    *   Larger font sizes for key metrics (e.g., `font-size: 32px;` or `48px;`).
-    *   Use `<strong>` tags with vibrant colors to make keywords pop inside paragraphs.
-4.  **Icons and SVGs**:
-    *   **Emojis**: Use standard emojis for quick icons (🚀, 📈, ⚖️).
-    *   **Images**: Use the `<img>` tag for high-quality photos or brand logos.
-    *   **SVG-style Shapes**: Create "Cards" or "Containers" using `<div>` with `background-color`, `border-radius: 15px;`, and `border-color`.
-5.  **Data Visualization**:
-    *   Use `<table>` for structured data.
-    *   Use colored boxes with large text inside for "KPI dashboards."
+### Example Output for "InnoSynth" (Based on your sample)
 
-## Supported HTML Elements & Styles
-
-| Element | Supported Styles / Attributes |
-| :--- | :--- |
-| **Slide** | `<div class="slide" style="background-color: #HEX;">` |
-| **Containers (Divs)** | `position: absolute`, `left`, `top`, `width`, `height`, `background-color`, `border-radius`, `border-color`, `border-width` |
-| **Headings (H1-H6)** | `color`, `font-size`, `text-align`, `left`, `top`, `width` |
-| **Paragraphs (P)** | `color`, `font-size`, `text-align`, `left`, `top`, `width` |
-| **Lists (UL, OL)** | `color`, `left`, `top`, `width` (Supports nested `<li>`) |
-| **Inline Formatting** | `<strong>` (Bold), `<em>` (Italic) — both support inline `color` and `font-size` styles. |
-| **Images (IMG)** | `src` (URL or path), `width`, `height`, `left`, `top` |
-| **Tables (TABLE)** | `left`, `top`, `width`, `background-color` (Header `<th>` is auto-styled blue). |
-
-## Design Principles
-*   **The 6x6 Rule**: Max 6 lines of text, 6 words per line. Let the design speak.
-*   **Contrast**: Always ensure high contrast between text and background.
-*   **Alignment**: Align elements to a grid (e.g., left margins always at 5% or 10%).
-
-## Premium Example: High-Tech Pitch Deck
+If you use the prompt above, the AI will produce code like this, which your Python service can then process into a `.pptx`:
 
 ```html
-<!-- Slide 1: Impactful Title -->
-<div class="slide" style="background-color: #121416;">
-  <h1 style="color: #ffffff; font-size: 54px; text-align: center; top: 25%;">QUANTUM NETWORKS 🚀</h1>
-  <p style="color: #00b6d6; font-size: 24px; text-align: center; top: 40%;">The Future of Unhackable Communication</p>
-  <div style="position: absolute; top: 70%; width: 100%; text-align: center;">
-    <p style="color: #667eea; font-size: 14px;">CONFIDENTIAL | SERIES A PITCH 2025</p>
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@700&family=Roboto+Flex:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { font-family: "Roboto Flex", sans-serif; margin: 0; padding: 0; background: #333; }
+        .ppt-slide { position: relative; width: 1280px; height: 720px; margin: 20px auto; overflow: hidden; background: white; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        h1, h2 { font-family: "Source Code Pro", monospace; }
+        .accent-bar { width: 100px; height: 8px; background-color: #A6C40D; }
+    </style>
+</head>
+<body>
 
-<!-- Slide 2: The Problem (Dashboard Style) -->
-<div class="slide" style="background-color: #ffffff;">
-  <h1 style="color: #4287f5; left: 5%; top: 5%;">Cybersecurity Crisis 📈</h1>
-  
-  <div style="position: absolute; left: 5%; top: 20%; width: 45%;">
-    <p style="color: #333; font-size: 20px;">Traditional encryption is <strong style="color: #ff4d4d;">failing</strong>.</p>
-    <ul>
-      <li>Quantum computers can crack RSA in seconds</li>
-      <li>Global cyber-theft costs <strong style="color: #ff4d4d;">$10.5T</strong> annually</li>
-      <li>Trust in digital infrastructure is at an all-time low</li>
-    </ul>
-  </div>
-
-  <!-- Stat Card -->
-  <div style="position: absolute; left: 55%; top: 20%; width: 40%; height: 50%; background-color: #f0f4ff; border-radius: 20px; border-color: #4287f5;">
-    <h3 style="color: #000; text-align: center; top: 10%;">The Impact</h3>
-    <div style="text-align: center; top: 30%;">
-      <p style="font-size: 42px;"><strong style="color: #ff4d4d;">60%</strong></p>
-      <p>of breaches are due to <br/>ancient cryptography</p>
+    <div class="ppt-slide flex flex-col justify-center items-center px-20">
+        <div class="text-center">
+            <h1 class="text-[80px] font-bold text-black leading-tight">InnoSynth</h1>
+            <div class="accent-bar mx-auto my-8"></div>
+            <h2 class="text-[32px] font-semibold text-gray-800">
+                World's 1st Chat-based AI Agent Development Platform
+            </h2>
+            <p class="text-[24px] text-[#A6C40D] font-bold mt-4 uppercase tracking-widest">Without Coding</p>
+        </div>
+        <div class="absolute bottom-10 flex items-center text-gray-400">
+            <i class="material-icons mr-2">location_on</i>
+            <span class="text-[18px]">Tiruppur, India</span>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- Slide 3: Conclusion & Next Steps -->
-<div class=\"slide\" style=\"background-color: #4287f5;\">
-  <h1 style=\"color: #ffffff; text-align: center; top: 30%;\">Ready to Scale?</h1>
-  <div style=\"position: absolute; left: 20%; top: 50%; width: 60%; text-align: center; background-color: rgba(255,255,255,0.1); border-radius: 50px;\">
-    <p style=\"color: #ffffff; padding: 20px;\">Contact us at investors@quantum.net</p>
-  </div>
-</div>
-```
+    <div class="ppt-slide p-16 bg-slate-50">
+        <h2 class="text-[40px] font-bold text-black mb-12 border-l-8 border-[#A6C40D] pl-6">Core Capabilities</h2>
+        <div class="grid grid-cols-3 gap-10">
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <i class="material-icons text-[48px] text-[#A6C40D] mb-4">chat</i>
+                <h3 class="text-[24px] font-bold mb-2">Natural Language</h3>
+                <p class="text-[18px] text-gray-600">Describe your agent in plain English; we handle the logic.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <i class="material-icons text-[48px] text-[#A6C40D] mb-4">bolt</i>
+                <h3 class="text-[24px] font-bold mb-2">Instant Deploy</h3>
+                <p class="text-[18px] text-gray-600">Go from concept to live API in under 60 seconds.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <i class="material-icons text-[48px] text-[#A6C40D] mb-4">hub</i>
+                <h3 class="text-[24px] font-bold mb-2">Multi-Tool</h3>
+                <p class="text-[18px] text-gray-600">Connect to 100+ apps via built-in integration nodes.</p>
+            </div>
+        </div>
+    </div>
 
-## API Call Format
-`POST /api/v1/generate-presentation`
-
-```bash
-curl -X POST 'http://101.53.140.44:8002/api/v1/generate-presentation' \
--H 'Content-Type: application/json' \
--d '{
-  "content": "SLIDE_HTML_HERE",
-  "filename": "quantum_pitch.pptx"
-}'
+</body>
+</html>
 ```
