@@ -13,18 +13,7 @@ Act as an expert Presentation Designer and Frontend Developer. Your task is to g
         .ppt-slide { position: relative; width: 1280px; height: 720px; overflow: hidden; background: white; }
         ```
 
-**Content Task:**
-Generate a [Number of Slides] slide deck about [Your Topic]. 
-* Slide 1: Title Slide (Title, Subtitle, Company Name).
-* Slide 2: Problem/Solution (Two-column grid).
-* Slide 3: Key Features (Icon-based grid).
-* Slide 4: Contact/Thank You.
-
----
-
-### Example Output for "InnoSynth" (Based on your sample)
-
-If you use the prompt above, the AI will produce code like this, which your Python service can then process into a `.pptx`:
+### Example Input for presentataion
 
 ```html
 <!DOCTYPE html>
