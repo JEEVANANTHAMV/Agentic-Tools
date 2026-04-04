@@ -12,4 +12,5 @@ class PresentationResponse(BaseModel):
     filename: str
     object_name: str
     download_url: str
+    preview_url: Optional[str] = None
     created_at: datetime

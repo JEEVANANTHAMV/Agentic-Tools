@@ -152,11 +152,20 @@ async def download_file(path: str):
         else:
             media_type = 'application/octet-stream'
         
-        return FileResponse(
-            filepath,
-            media_type=media_type,
-            filename=filename
-        )
+        content_disposition = "inline" if filename.endswith('.html') else "attachment"
+        if filename.endswith('.html'):
+            return FileResponse(
+                filepath,
+                media_type=media_type,
+                content_disposition_type=content_disposition
+            )
+        else:
+            return FileResponse(
+                filepath,
+                media_type=media_type,
+                filename=filename,
+                content_disposition_type=content_disposition
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -259,9 +268,88 @@ async def generate_presentation(
         # Save to local file system
         with open(filepath, 'wb') as f:
             f.write(presentation_stream.read())
+            
+        # Create presentation HTML wrapper
+        html_folder_path = os.path.join(
+            "generated_html_presentations",
+            today.strftime('%Y'),
+            today.strftime('%m'),
+            today.strftime('%d')
+        )
+        os.makedirs(html_folder_path, exist_ok=True)
+        html_filename = filename.replace('.pptx', '.html')
+        html_filepath = os.path.join(html_folder_path, html_filename)
         
+        # We need to apply Tailwind injected CSS to html
+        from services.powerpoint.ppt_creator import _inject_css
+        styled_html = _inject_css(request.content)
+        
+        # Wrap it in our presentation viewer
+        presentation_html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Presentation Preview</title>
+    <style>
+        body {{ margin: 0; background: #111; height: 100vh; width: 100vw; overflow: hidden; position: relative; }}
+        .slide-container {{ position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; box-shadow: 0 0 30px rgba(0,0,0,0.8); background: white; transform-origin: center center; }}
+        .slide {{ display: none !important; width: 100%; height: 100%; }}
+        .ppt-slide {{ display: none !important; width: 100%; height: 100%; }}
+        .slide.active, .ppt-slide.active {{ display: block !important; }}
+    </style>
+</head>
+<body>
+    <div class="slide-container" id="presentation-container">
+        {styled_html}
+    </div>
+    <script>
+        const slides = document.querySelectorAll('.slide, .ppt-slide');
+        let currentSlide = 0;
+        if(slides.length > 0) slides[currentSlide].classList.add('active');
+        
+        function resize() {{
+            const container = document.getElementById('presentation-container');
+            const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+            container.style.transform = `translate(-50%, -50%) scale(${{scale}})`;
+        }}
+        window.addEventListener('resize', resize);
+        resize();
+
+        document.addEventListener('keydown', (e) => {{
+            if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === ' ') {{
+                if (currentSlide < slides.length - 1) {{
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide++;
+                    slides[currentSlide].classList.add('active');
+                }}
+            }} else if (e.key === 'ArrowLeft') {{
+                if (currentSlide > 0) {{
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide--;
+                    slides[currentSlide].classList.add('active');
+                }}
+            }}
+        }});
+        
+        document.addEventListener('click', (e) => {{
+            if (currentSlide < slides.length - 1) {{
+                slides[currentSlide].classList.remove('active');
+                currentSlide++;
+                slides[currentSlide].classList.add('active');
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+        
+        with open(html_filepath, 'w', encoding='utf-8') as f:
+            f.write(presentation_html)
+            
         # Generate download URL
         server_ip = get_server_ip()
+        html_relative_path = html_filepath.replace("generated_html_presentations" + os.sep, '').replace(os.sep, '/')
+        preview_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{html_relative_path}?view=presentation"
+        
         relative_path = filepath.replace("generated_presentations" + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -271,6 +359,7 @@ async def generate_presentation(
             filename=filename,
             object_name=relative_path,
             download_url=download_url,
+            preview_url=preview_url,
             created_at=datetime.now()
         )
         
