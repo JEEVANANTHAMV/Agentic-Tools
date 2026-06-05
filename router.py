@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from fastapi.responses import FileResponse
 from models.document_models import DocumentRequest, DocumentResponse, DocumentListResponse
 from models.excel_model import ExcelRequest, ExcelResponse
@@ -61,14 +61,15 @@ def get_markdown_converter():
 def get_visualization_creator():
     return VisualizationCreator()
 
-def get_server_ip():
-    """Get server IP address"""
-    return "101.53.140.44"
+def get_server_ip(request: Request):
+    """Get server IP address from request"""
+    return request.url.hostname or "127.0.0.1"
 
 @router.post("/generate-document", response_model=DocumentResponse)
 async def generate_document(
     request: DocumentRequest,
-    docx_creator: DocxCreator = Depends(get_docx_creator)
+    docx_creator: DocxCreator = Depends(get_docx_creator),
+    server_ip: str = Depends(get_server_ip)
 ):
     try:
         # Create date-based folder structure
@@ -98,7 +99,6 @@ async def generate_document(
             f.write(doc_stream.read())
         
         # Generate download URL (include the /api/v1 prefix)
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -197,7 +197,8 @@ async def delete_document(
 @router.post("/generate-excel", response_model=ExcelResponse)
 async def generate_excel(
     request: ExcelRequest,
-    excel_creator: ExcelCreator = Depends(get_excel_creator)
+    excel_creator: ExcelCreator = Depends(get_excel_creator),
+    server_ip: str = Depends(get_server_ip)
 ):
     try:
         # Create date-based folder structure
@@ -224,7 +225,6 @@ async def generate_excel(
             f.write(excel_stream.read())
         
         # Generate download URL
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -243,7 +243,8 @@ async def generate_excel(
 @router.post("/generate-presentation", response_model=PresentationResponse)
 async def generate_presentation(
     request: PresentationRequest,
-    presentation_creator: PresentationCreator = Depends(get_presentation_creator)
+    presentation_creator: PresentationCreator = Depends(get_presentation_creator),
+    server_ip: str = Depends(get_server_ip)
 ):
     try:
         # Create date-based folder structure
@@ -346,7 +347,6 @@ async def generate_presentation(
             f.write(presentation_html)
             
         # Generate download URL
-        server_ip = get_server_ip()
         html_relative_path = html_filepath.replace("generated_html_presentations" + os.sep, '').replace(os.sep, '/')
         preview_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{html_relative_path}?view=presentation"
         
@@ -369,7 +369,8 @@ async def generate_presentation(
 @router.post("/execute-sql-excel", response_model=SQLQueryResponse)
 async def execute_sql_query(
     request: SQLQueryRequest,
-    sql_service: SQLToExcelService = Depends(get_sql_service)
+    sql_service: SQLToExcelService = Depends(get_sql_service),
+    server_ip: str = Depends(get_server_ip)
 ):
     try:
         # Create date-based folder structure
@@ -396,7 +397,6 @@ async def execute_sql_query(
             f.write(excel_stream.read())
         
         # Generate download URL
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -413,7 +413,7 @@ async def execute_sql_query(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/")
-async def root():
+async def root(server_ip: str = Depends(get_server_ip)):
     """API information"""
     return {
         "name": "API for forjinn tools.",
@@ -424,14 +424,15 @@ async def root():
             "list": "/list-documents (GET)",
             "delete": "/delete-document/{object_name:path} (DELETE)"
         },
-        "server_ip": get_server_ip()
+        "server_ip": server_ip
     }
 
 # PDF Converter Endpoints
 @router.post("/convert-to-pdf", response_model=PDFResponse, tags=["PDF"])
 async def convert_to_pdf(
     request: PDFRequest,
-    pdf_creator: PDFCreator = Depends(get_pdf_creator)
+    pdf_creator: PDFCreator = Depends(get_pdf_creator),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Convert content to PDF format"""
     try:
@@ -452,7 +453,6 @@ async def convert_to_pdf(
         with open(filepath, 'wb') as f:
             f.write(pdf_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -471,7 +471,8 @@ async def convert_to_pdf(
 @router.post("/process-csv", response_model=CSVResponse, tags=["CSV"])
 async def process_csv(
     request: CSVRequest,
-    csv_processor: CSVProcessor = Depends(get_csv_processor)
+    csv_processor: CSVProcessor = Depends(get_csv_processor),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Process and transform CSV data"""
     try:
@@ -492,7 +493,6 @@ async def process_csv(
         with open(filepath, 'wb') as f:
             f.write(csv_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -511,7 +511,8 @@ async def process_csv(
 @router.post("/format-json", response_model=JSONResponse, tags=["JSON"])
 async def format_json(
     request: JSONRequest,
-    json_formatter: JSONFormatter = Depends(get_json_formatter)
+    json_formatter: JSONFormatter = Depends(get_json_formatter),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Format and validate JSON data"""
     try:
@@ -532,7 +533,6 @@ async def format_json(
         with open(filepath, 'wb') as f:
             f.write(json_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -551,7 +551,8 @@ async def format_json(
 @router.post("/parse-xml", response_model=XMLResponse, tags=["XML"])
 async def parse_xml(
     request: XMLRequest,
-    xml_parser: XMLParser = Depends(get_xml_parser)
+    xml_parser: XMLParser = Depends(get_xml_parser),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Parse and transform XML data"""
     try:
@@ -572,7 +573,6 @@ async def parse_xml(
         with open(filepath, 'wb') as f:
             f.write(xml_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -591,7 +591,8 @@ async def parse_xml(
 @router.post("/convert-markdown", response_model=MarkdownResponse, tags=["Markdown"])
 async def convert_markdown(
     request: MarkdownRequest,
-    markdown_converter: MarkdownConverter = Depends(get_markdown_converter)
+    markdown_converter: MarkdownConverter = Depends(get_markdown_converter),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Convert Markdown to various formats"""
     try:
@@ -612,7 +613,6 @@ async def convert_markdown(
         with open(filepath, 'wb') as f:
             f.write(output_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
@@ -631,7 +631,8 @@ async def convert_markdown(
 @router.post("/create-visualization", response_model=VisualizationResponse, tags=["Visualization"])
 async def create_visualization(
     request: VisualizationRequest,
-    visualization_creator: VisualizationCreator = Depends(get_visualization_creator)
+    visualization_creator: VisualizationCreator = Depends(get_visualization_creator),
+    server_ip: str = Depends(get_server_ip)
 ):
     """Create charts and visualizations from data"""
     try:
@@ -652,7 +653,6 @@ async def create_visualization(
         with open(filepath, 'wb') as f:
             f.write(viz_stream.read())
         
-        server_ip = get_server_ip()
         relative_path = filepath.replace(settings.DOCUMENT_LOCATION + os.sep, '').replace(os.sep, '/')
         download_url = f"http://{server_ip}:{settings.PORT}/api/v1/download/{relative_path}"
         
