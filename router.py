@@ -25,6 +25,8 @@ from services.json.json_formatter import JSONFormatter
 from services.xml.xml_parser import XMLParser
 from services.markdown.markdown_converter import MarkdownConverter
 from services.visualization.visualization_creator import VisualizationCreator
+from models.mssql_model import MSSQLRequest, MSSQLResponse
+from services.mssql.mssql_service import MSSQLService, MSSQLError, ReadOnlyViolation
 
 router = APIRouter()
 
@@ -60,6 +62,9 @@ def get_markdown_converter():
 
 def get_visualization_creator():
     return VisualizationCreator()
+
+def get_mssql_service():
+    return MSSQLService()
 
 def get_server_ip(request: Request):
     """Get server IP address from request"""
@@ -666,3 +671,84 @@ async def create_visualization(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# MS SQL Connector Endpoint (single endpoint, two modes: list actions / call action)
+@router.post("/mssql", response_model=MSSQLResponse, tags=["MS SQL"])
+async def mssql_connector(
+    request: MSSQLRequest,
+    mssql_service: MSSQLService = Depends(get_mssql_service)
+):
+    """
+    Connect to ANY MS SQL Server database and run actions against it.
+
+    Two modes in one endpoint:
+    - mode="list": returns the catalogue of actions and how to use them (no DB call).
+    - mode="call": runs `action` against the database described by `connection`.
+
+    Credentials are passed per-request in `connection` (never read from .env),
+    so many different databases/users can be served from this one endpoint.
+    """
+    # ---- mode: list -> self-documenting "how to use" catalogue ----
+    if request.mode == "list":
+        return MSSQLResponse(
+            status="success",
+            mode="list",
+            action=None,
+            message="Available MS SQL actions and how to call them. Use mode='call' to run one.",
+            usage=mssql_service.get_usage(),
+            created_at=datetime.now()
+        )
+
+    # ---- mode: call -> validate then dispatch ----
+    if not request.connection:
+        raise HTTPException(
+            status_code=400,
+            detail="'connection' is required when mode='call' (host, user, password, ...)."
+        )
+    if not request.action:
+        raise HTTPException(
+            status_code=400,
+            detail="'action' is required when mode='call'. Send {\"mode\":\"list\"} to see available actions."
+        )
+
+    # Target info echoed back on every action (no credentials included).
+    target = {
+        "host": request.connection.host,
+        "port": request.connection.port,
+        "database": request.params.database or request.connection.database,
+    }
+
+    try:
+        data, meta = mssql_service.run_action(request.action, request.connection, request.params)
+        return MSSQLResponse(
+            status="success",
+            mode="call",
+            action=request.action,
+            message=f"Action '{request.action}' completed successfully.",
+            target=target,
+            data=data,
+            meta=meta,
+            created_at=datetime.now()
+        )
+    except ValueError as e:
+        # Unknown action / bad arguments -> client error.
+        raise HTTPException(status_code=400, detail=str(e))
+    except ReadOnlyViolation as e:
+        return MSSQLResponse(
+            status="error",
+            mode="call",
+            action=request.action,
+            message=str(e),
+            target=target,
+            created_at=datetime.now()
+        )
+    except MSSQLError as e:
+        # Connection / SQL execution failures -> return a clean, readable error body.
+        return MSSQLResponse(
+            status="error",
+            mode="call",
+            action=request.action,
+            message=str(e),
+            target=target,
+            created_at=datetime.now()
+        )

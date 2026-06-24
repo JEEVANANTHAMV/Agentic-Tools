@@ -202,6 +202,30 @@ AVAILABLE_TOOLS = [
             "download_url": "string",
             "created_at": "datetime"
         }
+    },
+    {
+        "tool_name": "mssql_connector",
+        "description": "Connect to any MS SQL Server database (credentials via payload) and run actions: test connection, list databases, list/search tables, list/search columns (with SQL-side search + pagination for huge schemas), and execute read-only or write SQL queries. Single endpoint with two modes - 'list' to discover actions, 'call' to run one.",
+        "endpoint": "/api/v1/mssql",
+        "method": "POST",
+        "service_path": "services/mssql",
+        "parameters": {
+            "mode": {"type": "string", "description": "'list' to discover actions and how to use them, 'call' to run an action", "required": True},
+            "action": {"type": "string", "description": "Action to run when mode='call': test_connection | list_databases | list_tables | list_columns | search_columns | execute_query", "required": False},
+            "connection": {"type": "object", "description": "DB credentials (host, port, user, password, database, ...) - required when mode='call'", "required": False},
+            "params": {"type": "object", "description": "Action params: database, schema, table, query, read_only, max_rows, include_views, and for large schemas: search (LIKE substring), data_type, limit, offset", "required": False}
+        },
+        "response_model": {
+            "status": "string",
+            "mode": "string",
+            "action": "string",
+            "message": "string",
+            "target": "object",
+            "data": "object",
+            "meta": "object",
+            "usage": "object",
+            "created_at": "datetime"
+        }
     }
 ]
 
@@ -247,7 +271,30 @@ def generate_sample_curl(tool: Dict[str, Any]) -> str:
     endpoint = tool["endpoint"]
     method = tool["method"]
     params = tool["parameters"]
-    
+
+    # The MS SQL connector takes a structured payload rather than content/filename.
+    if tool["tool_name"] == "mssql_connector":
+        payload = (
+            '{\n'
+            '    "mode": "call",\n'
+            '    "action": "list_tables",\n'
+            '    "connection": {\n'
+            '      "host": "10.0.0.5",\n'
+            '      "port": 1433,\n'
+            '      "user": "sa",\n'
+            '      "password": "YourStrong!Passw0rd"\n'
+            '    },\n'
+            '    "params": { "database": "Northwind", "schema": "dbo" }\n'
+            '  }'
+        )
+        return (
+            f"curl -X '{method}' \\\n"
+            f"  '{base_url}{endpoint}' \\\n"
+            f"  -H 'accept: application/json' \\\n"
+            f"  -H 'Content-Type: application/json' \\\n"
+            f"  -d '{payload}'"
+        )
+
     # Build the JSON payload based on required parameters
     payload_parts = []
     for param_name, param_info in params.items():
