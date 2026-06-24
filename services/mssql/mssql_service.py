@@ -559,6 +559,19 @@ class MSSQLService:
                 "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_NAME LIKE '%amount%' - this is the "
                 "unlimited-power equivalent of grep over the schema.",
             ],
+            "recommended_workflow": [
+                "1. list_databases -> pick the database.",
+                "2. search_columns by concept (e.g. 'email', 'amount', 'customer_id') to find WHICH tables hold "
+                "the data. You usually know the column concept, not the table - so lead with this, not list_tables.",
+                "3. list_tables with params.search to confirm candidate table names (paged).",
+                "4. list_columns on a candidate table for exact column names + data types.",
+                "5. Profile via execute_query on catalog views: row counts (sys.partitions), primary/foreign keys "
+                "(sys.foreign_keys), indexes (sys.indexes) - so you join correctly and hit indexes.",
+                "6. execute_query with read_only=true and SELECT TOP N to pull a small, precise sample.",
+                "Golden rules: never SELECT * without a TOP cap; filter/page on the server; find the biggest tables "
+                "(by row count) and the foreign keys before writing joins. See the prompt.md playbook for copy-paste "
+                "catalog-view recipes.",
+            ],
             "available_actions": MSSQL_ACTIONS,
             "actions": actions,
         }
